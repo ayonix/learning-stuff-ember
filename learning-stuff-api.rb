@@ -1,36 +1,21 @@
-require 'data_mapper'
 require 'json'
+require 'active_record'
 require 'sinatra'
-require 'sinatra/contrib'
-require 'sinatra/json'
+require 'sinatra/activerecord'
 
-# If you want the logs displayed you have to do this before the call to setup
-DataMapper::Logger.new($stdout, :debug)
+set :database, "sqlite3:stuff.db"
 
-# An in-memory Sqlite3 connection:
-DataMapper.setup(:default, 'sqlite:/tmp/db.db')
+# Serve static files
+set :public_folder, File.dirname(__FILE__) + '/app'
 
-class Topic
-	include DataMapper::Resource
-	has n, :notes
-
-	property :id, Serial
-	property :name, String
+class Topic < ActiveRecord::Base
+	has_many :notes
 end
 
-class Note
-	include DataMapper::Resource
+class Note < ActiveRecord::Base
 	belongs_to :topic
-
-	property :id, Serial
-	property :question, String
-	property :answer, String
 end
 
-# DataMapper.auto_migrate!
-DataMapper.auto_upgrade!
-
-namespace '/api/v1' do
 	before do
 		response['Access-Control-Allow-Origin'] = '*'
 		response['Access-Control-Allow-Headers'] = 'Content-Type'
@@ -42,31 +27,36 @@ namespace '/api/v1' do
 	end
 
 	get '/topics' do 
-		json topics: Topic.all
+		topics = Topic.all.includes(:notes)
+		return {topics: topics}.to_json
 	end
 
 	post '/topics' do
 		data = JSON.parse(request.body.read, symbolize_names: true)
-		Topic.create(data[:topic])
+		topic = Topic.create(data[:topic])
+		{topic: topic, notes: topic.notes}.to_json
 	end
 
 	get '/topics/:id' do
-		json topic: Topic.get(params[:id])
+		topic = Topic.find(params[:id])
+		derp = {topic: topic.attributes, notes: topic.notes}
+		derp[:topic][:notes] = topic.notes.map(&:id)
+		derp.to_json
 	end
 
 	put '/topics/:id' do
-		topic = Topic.get(params[:id])
+		topic = Topic.find(params[:id])
 		data = JSON.parse(request.body.read, symbolize_names: true)
 		topic.update(data[:topic])
 		if topic.save
-			return 200
+			{topic: topic}.to_json
 		else
-			return 500
+			status 500
 		end
 	end
 
 	delete '/topics/:id' do
-		Topic.get(params[:id]).destroy
+		Topic.find(params[:id]).destroy
 	end
 
 	# NOTES
@@ -75,19 +65,22 @@ namespace '/api/v1' do
 	end
 
 	get '/notes/:id' do 
-		json notes: Note.get(params[:id])
+		{notes: Note.get(params[:id])}.to_json
 	end
 
 	post '/notes' do
 		note = Note.new
 		data = JSON.parse(request.body.read, symbolize_names: true)
-		note.attributes = data[:note]
-		topic = Topic.get(data[:note][:topic_id])
+		topic = Topic.find(data[:note][:topic])
+
+		note.question = data[:note][:question]
+		note.answer = data[:note][:answer]
+
 		topic.notes << note
 		if topic.save
-			return 200
+			{note: note}.to_json
 		else
-			return 500
+			status 500
 		end
 	end
 
@@ -99,6 +92,5 @@ namespace '/api/v1' do
 	end
 
 	delete '/notes/:id' do
-		Note.get(params[:id]).destroy
+		Note.find(params[:id]).destroy
 	end
-end

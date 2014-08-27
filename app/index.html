@@ -22,22 +22,22 @@
     {{#link-to 'topics.new'}}New Topic{{/link-to}}
     <ul>
     {{#each item in model}}
-      <li>{{#link-to 'topics.show' item}}{{item.name}}{{/link-to}}</li>
+      <li>{{#link-to 'topic' item}}{{item.name}}{{/link-to}}</li>
     {{/each}}
     </ul>
   </script>
 
-  <script type="text/x-handlebars" data-template-name="topics/show">
+  <script type="text/x-handlebars" data-template-name="topic">
     <h2>Topic: {{name}}</h2>
     {{#link-to 'notes.new'}}New Note{{/link-to}}
 
+    {{outlet}}
+
     <ul>
     {{#each item in notes}}
-      <li>{{item}}</li>
+      <li>{{item.question}} - {{item.answer}}</li>
     {{/each}}
     </ul>
-    
-    {{outlet}}
   </script>
 
   <script type="text/x-handlebars" data-template-name="topics/new">
@@ -54,7 +54,7 @@
   </script>
 
   <script type="text/x-handlebars" data-template-name="notes/new">
-    <h2>New Note</h2>
+    <h2>New Note for {{model.topic.name}}</h2>
     {{partial 'note_form'}}
   </script>
 
