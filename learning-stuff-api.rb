@@ -27,6 +27,10 @@ end
 		response['Access-Control-Allow-Headers'] = 'Content-Type'
 	end
 
+	get '/' do
+		redirect '//index.html'
+	end
+
 	# TOPICS
 	options '/topics' do
 		%w(GET POST PUT DELETE)
