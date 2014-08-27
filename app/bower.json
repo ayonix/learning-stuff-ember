@@ -1,0 +1,22 @@
+{
+  "name": "learning-stuff",
+  "version": "0.1.0",
+  "authors": [
+    "Ayonix <adrian.leva@gmail.com>"
+  ],
+  "description": "To learn stuff",
+  "main": "index.html",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+  	"ember": "~1.7",
+    "ember-data": "~1.0.0-beta.9"
+  }
+}
