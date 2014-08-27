@@ -10,10 +10,16 @@ set :public_folder, File.dirname(__FILE__) + '/app'
 
 class Topic < ActiveRecord::Base
 	has_many :notes
+
+	validates :name, {uniqueness: true, length: {minimum: 1}}
 end
 
 class Note < ActiveRecord::Base
 	belongs_to :topic
+
+	validates :question, length: {minimum: 1}
+	validates :answer, length: {minimum: 1}
+	validates :topic, presence: true
 end
 
 	before do
@@ -28,13 +34,22 @@ end
 
 	get '/topics' do 
 		topics = Topic.all.includes(:notes)
-		return {topics: topics}.to_json
+		data = {topics: []}
+		topics.each_with_index do |t, i|
+			data[:topics][i] = t.attributes
+			data[:topics][i][:notes] = t.notes.pluck(:id)
+		end
+		return data.to_json
 	end
 
 	post '/topics' do
 		data = JSON.parse(request.body.read, symbolize_names: true)
-		topic = Topic.create(data[:topic])
-		{topic: topic, notes: topic.notes}.to_json
+		topic = Topic.new(data[:topic])
+		if topic.save
+			{topic: topic, notes: topic.notes}.to_json
+		else 
+			error 400
+		end
 	end
 
 	get '/topics/:id' do
@@ -51,7 +66,7 @@ end
 		if topic.save
 			{topic: topic}.to_json
 		else
-			status 500
+			error 400
 		end
 	end
 
@@ -65,7 +80,7 @@ end
 	end
 
 	get '/notes/:id' do 
-		{notes: Note.get(params[:id])}.to_json
+		{notes: Note.find(params[:id])}.to_json
 	end
 
 	post '/notes' do
@@ -77,10 +92,10 @@ end
 		note.answer = data[:note][:answer]
 
 		topic.notes << note
-		if topic.save
+		if note.save
 			{note: note}.to_json
 		else
-			status 500
+			error 400
 		end
 	end
 

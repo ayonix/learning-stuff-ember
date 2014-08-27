@@ -22,7 +22,7 @@ App.ApplicationAdapter = DS.RESTAdapter.extend({
 
 App.Topic = DS.Model.extend({
 	name: DS.attr('string'),
-	notes: DS.hasMany('note')
+	notes: DS.hasMany('note', {async: true})
 });
 
 App.Note = DS.Model.extend({
