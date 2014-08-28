@@ -17,6 +17,7 @@ ActiveRecord::Schema.define(version: 20140827204354) do
     t.string   "question"
     t.string   "answer"
     t.integer  "topic_id"
+    t.boolean  "needs_learning"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

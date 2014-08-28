@@ -28,7 +28,7 @@ end
 	end
 
 	get '/' do
-		redirect '//index.html'
+		redirect '/index.html'
 	end
 
 	# TOPICS
@@ -104,10 +104,14 @@ end
 	end
 
 	put '/notes/:id' do
-		note = Note.get(params[:id])
+		note = Note.find(params[:id])
 		data = JSON.parse(request.body.read, symbolize_names: true)
-		note.update(data[:note])
-		note.save
+		# data[:note].delete(:topic)
+		if note.update(data[:note])
+			{note: note}.to_json
+		else
+			error 400
+		end
 	end
 
 	delete '/notes/:id' do

@@ -4,6 +4,7 @@ class CreateNotes < ActiveRecord::Migration
   		t.string :question
   		t.string :answer
   		t.integer :topic_id
+  		t.boolean :needs_learning
   		t.timestamps
   	end
   end

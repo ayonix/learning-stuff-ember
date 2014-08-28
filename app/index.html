@@ -1,80 +1,100 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Ember Starter Kit</title>
-  <link rel="stylesheet" href="css/normalize.css">
-  <link rel="stylesheet" href="css/style.css">
+	<meta charset="utf-8">
+	<title>Ember Starter Kit</title>
+	<link rel="stylesheet" href="css/normalize.css">
+	<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <script type="text/x-handlebars">
-    <h1>Learning stuff</h1>
-    <nav>
-      <ul>
-        <li>{{#link-to 'index'}}Home{{/link-to}}</li>
-      </ul>
-    </nav>
+	<script type="text/x-handlebars">
+		<h1>Learning stuff</h1>
+		<nav>
+			<ul>
+				<li>{{#link-to 'index'}}List Topics{{/link-to}}</li>
+				<li>{{#link-to 'topics.new'}}New Topic{{/link-to}}</li>
+			</ul>
+		</nav>
 
-    {{outlet}}
-  </script>
+		{{outlet}}
+	</script>
 
-  <script type="text/x-handlebars" id="index">
-    {{#link-to 'topics.new'}}New Topic{{/link-to}}
-    <ul>
-    {{#each item in model}}
-      <li>{{#link-to 'topic' item}}{{item.name}}{{/link-to}}</li>
-    {{/each}}
-    </ul>
-  </script>
+	<script type="text/x-handlebars" id="index">
+		<h2>Topics:</h2>
+		<ul>
+		{{#each item in model}}
+			<li>{{#link-to 'notes.index' item}}{{item.name}}{{/link-to}}</li>
+		{{/each}}
+		</ul>
+	</script>
 
-  <script type="text/x-handlebars" data-template-name="topic">
-    <h2>Topic: {{name}}</h2>
-    {{#link-to 'notes.new'}}New Note{{/link-to}}
+	<script type="text/x-handlebars" data-template-name="topic">
+		<h2>Topic: {{name}}</h2>
+		{{#link-to 'notes.new'}}New Note{{/link-to}}
+		<button {{action 'random_note'}}>Random Note</button>
+		<br/>
 
-    {{outlet}}
+		{{outlet}}
+	</script>
 
-    <ul>
-    {{#each item in notes}}
-      <li>{{item.question}} - {{item.answer}}</li>
-    {{/each}}
-    </ul>
-  </script>
+	<script type="text/x-handlebars" data-template-name="topics/new">
+		<h2>New Topic</h2>
+		{{partial 'topic_form'}}
+	</script>
 
-  <script type="text/x-handlebars" data-template-name="topics/new">
-    <h2>New Topic</h2>
-    {{partial 'topic_form'}}
-  </script>
+	<script type="text/x-handlebars" data-template-name="_topic_form">
+		<form {{action 'save' on="submit"}}>
+				<label>Name</label>
+				{{input type="text" value=name}}
+				<button type="submit">Save</button>
+		</form>
+	</script>
 
-  <script type="text/x-handlebars" data-template-name="_topic_form">
-    <form {{action 'save' on="submit"}}>
-        <label>Name</label>
-        {{input type="text" value=name}}
-        <button type="submit">Save</button>
-    </form>
-  </script>
+	<script type="text/x-handlebars" data-template-name="notes/new">
+		<h2>New Note for {{model.topic.name}}</h2>
+		{{partial 'note_form'}}
+	</script>
 
-  <script type="text/x-handlebars" data-template-name="notes/new">
-    <h2>New Note for {{model.topic.name}}</h2>
-    {{partial 'note_form'}}
-  </script>
+	<script type="text/x-handlebars" data-template-name="_note_form">
+		<form {{action 'save' on="submit"}}
+			<label>Question</label>
+			{{input type="text" value=question}}
+			<label>Answer</label>
+			{{input type="text" value=answer}}
 
-  <script type="text/x-handlebars" data-template-name="_note_form">
-    <form {{action 'save' on="submit"}}
-      <label>Question</label>
-      {{input type="text" value=question}}
-      <label>Answer</label>
-      {{input type="text" value=answer}}
+			<button type="submit">Save</button>
+		</form>
+	</script>
 
-      <button type="submit">Save</button>
-    </form>
-  </script>
+	<script type="text/x-handlebars" data-template-name="notes/index">
+	<ul>
+		{{#each note in model}}
+				<li>{{note.question}}</li>
+		{{/each}}
+		</ul>
+	</script>
 
-  <script src="js/libs/jquery.js"></script>
-  <script src="js/libs/handlebars.js"></script>
-  <script src="js/libs/ember.js"></script>
-  <script src="js/libs/ember-data.js"></script>
-  <script src="js/app.js"></script>
-  <!-- to activate the test runner, add the "?test" query string parameter -->
-  <script src="tests/runner.js"></script>
+	<script type="text/x-handlebars" data-template-name="notes/note">
+		{{partial 'note'}}
+	</script>
+
+	<script type="text/x-handlebars" data-template-name="_note">
+		<p>{{note.question}}</p>
+		{{#if isShowingAnswer}}
+			<p>{{note.answer}}</p>
+			<button {{action 'markAsKnown'}}>I know that question now</button>
+		{{else}}
+			<button {{action 'showAnswer'}}>Show the answer</button>
+		{{/if}}
+		<button {{action 'random_note'}}>Next question</button>
+	</script>
+
+	<script src="js/libs/jquery.js"></script>
+	<script src="js/libs/handlebars.js"></script>
+	<script src="js/libs/ember.js"></script>
+	<script src="js/libs/ember-data.js"></script>
+	<script src="js/app.js"></script>
+	<!-- to activate the test runner, add the "?test" query string parameter -->
+	<script src="tests/runner.js"></script>
 </body>
 </html>
