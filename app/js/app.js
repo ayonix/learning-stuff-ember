@@ -21,7 +21,21 @@ App.ApplicationAdapter = DS.RESTAdapter.extend({
 
 App.Topic = DS.Model.extend({
 	name: DS.attr('string'),
-	notes: DS.hasMany('note', {async: true})
+	notes: DS.hasMany('note', {async: true}),
+
+	random_note: function() {
+		var self = this;
+		var next = this.get('notes').then(function(notes) {
+			var ns = notes.get('content');
+			ns = ns.filterProperty('needs_learning', true);
+			if (ns.length > 0) {
+				return ns[Math.floor(Math.random() * ns.length)].id;
+			} else {
+				return -1;
+			}
+		});
+		return next;
+	}
 });
 
 App.Note = DS.Model.extend({
@@ -47,11 +61,14 @@ App.TopicController = Ember.ObjectController.extend({
 	actions: {
 		random_note: function() {
 			var self = this;
-			var notes = this.get('notes').then(function(notes) {
-				var ns = notes.get('content');
-				var next = ns[Math.floor(Math.random() * ns.length)];
-				self.transitionToRoute('notes.note', next);
+			this.get('model').random_note().then(function(id) {
+				if (id !== -1) {
+					self.transitionToRoute('notes.note', id);
+				} else {
+					alert('All questions done');
+				}
 			});
+
 		}
 	}
 });
@@ -135,6 +152,16 @@ App.NotesNoteController = Ember.ObjectController.extend({
 	reset: function() {
 		this.set('isShowingAnswer', false);
 	},
+	nextNote: function() {
+		var self = this;
+		this.get('topic').random_note().then(function(id) {
+			if (id !== -1) {
+				self.transitionToRoute('notes.note', id);
+			} else {
+				alert('All questions done');
+			}
+		});
+	},
 	actions: {
 		showAnswer: function(params) {
 			this.set('isShowingAnswer', true);
@@ -144,14 +171,10 @@ App.NotesNoteController = Ember.ObjectController.extend({
 				note.set('needs_learning', false);
 				note.save();
 			});
+			this.nextNote();
 		},
 		random_note: function(params) {
-			var self = this;
-			this.get('topic.notes').then(function(notes) {
-				var ns = notes.get('content');
-				var next = ns[Math.floor(Math.random() * ns.length)];
-				self.transitionToRoute('notes.note', next);
-			});
+			this.nextNote();
 		}
 	}
 });
